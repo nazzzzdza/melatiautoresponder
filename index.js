@@ -32,6 +32,14 @@ for (const file of commandFiles) {
   commands.set(command.trigger.toLowerCase(), command);
 }
 
+// ================= GLOBAL ANTI-DUPLICATE =================
+const handledMessages = new Set();
+
+// cleanup memory (prevents memory leak)
+setInterval(() => {
+  handledMessages.clear();
+}, 1000 * 60 * 10);
+
 // ================= READY =================
 client.once("ready", () => {
   console.log(`READY: ${client.user.tag}`);
@@ -51,23 +59,21 @@ client.on("messageCreate", async (message) => {
 
   if (message.author.bot) return;
 
+  // HARD STOP DUPLICATES
+  if (handledMessages.has(message.id)) return;
+  handledMessages.add(message.id);
+
   const content = message.content.trim().toLowerCase();
 
-  // exact trigger only
   const command = commands.get(content);
-
   if (!command) return;
-
-  // anti duplicate protection
-  if (message.__handled) return;
-  message.__handled = true;
 
   try {
 
-    // DELETE TRIGGER MESSAGE
+    // delete trigger message
     await message.delete().catch(() => {});
 
-    // SEND RESPONSE
+    // execute response
     await command.execute(message);
 
   } catch (err) {
