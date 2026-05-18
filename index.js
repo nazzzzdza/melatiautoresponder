@@ -29,7 +29,7 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
-  commands.set(command.trigger, command);
+  commands.set(command.trigger.toLowerCase(), command);
 }
 
 // ================= READY =================
@@ -53,9 +53,14 @@ client.on("messageCreate", async (message) => {
 
   const content = message.content.trim().toLowerCase();
 
+  // exact trigger only
   const command = commands.get(content);
 
   if (!command) return;
+
+  // anti duplicate protection
+  if (message.__handled) return;
+  message.__handled = true;
 
   try {
     await command.execute(message);
