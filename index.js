@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 
-app.get("/", (_, res) => res.send("melati ar bot running"));
+app.get("/", (_, res) => res.send("Autoresponder bot running"));
 app.listen(3000, () => console.log("Web server running"));
 
 const fs = require("fs");
@@ -63,7 +63,13 @@ client.on("messageCreate", async (message) => {
   message.__handled = true;
 
   try {
+
+    // DELETE TRIGGER MESSAGE
+    await message.delete().catch(() => {});
+
+    // SEND RESPONSE
     await command.execute(message);
+
   } catch (err) {
     console.error(err);
   }
